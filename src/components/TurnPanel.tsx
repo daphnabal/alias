@@ -6,6 +6,7 @@ import { useAudio } from '../hooks/useAudio';
 import { haptic } from '../utils/haptics';
 import { wordCard, scorePop } from '../utils/motion';
 import TimerDisplay from './TimerDisplay';
+import OptionsMenu from './OptionsMenu';
 
 export default function TurnPanel() {
   const currentWord = useGameStore((s) => s.turn.currentWord);
@@ -28,7 +29,7 @@ export default function TurnPanel() {
     haptic('heavy');
   }, [endTimer, play]);
 
-  const { remaining, total, phase, progress, start } = useTimer({
+  const { remaining, total, phase, progress, start, pause } = useTimer({
     duration: turnDuration,
     onExpire: handleExpire,
   });
@@ -59,6 +60,8 @@ export default function TurnPanel() {
 
   return (
     <div className="flex-1 flex flex-col justify-between p-4 max-w-md mx-auto w-full">
+      {/* Options menu */}
+      <OptionsMenu onPause={pause} onResume={start} />
       {/* ── Header: team name + timer ── */}
       <div className="space-y-3">
         {/* Team indicator */}

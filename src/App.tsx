@@ -2,6 +2,7 @@ import { AnimatePresence } from 'framer-motion';
 import { useGameStore } from './store/gameStore';
 import { GamePhase } from './types';
 import SetupScreen from './components/SetupScreen';
+import PreTurnScreen from './components/PreTurnScreen';
 import TurnPanel from './components/TurnPanel';
 import Board from './components/Board';
 import TimeUpModal from './components/TimeUpModal';
@@ -17,6 +18,8 @@ function App() {
     <main className="min-h-screen flex flex-col bg-slate-900 text-slate-100 font-heebo">
       <AnimatePresence mode="wait">
         {gamePhase === GamePhase.SETUP && <SetupScreen key="setup" />}
+
+        {gamePhase === GamePhase.PRE_TURN && <PreTurnScreen key="preturn" />}
 
         {gamePhase === GamePhase.TURN && (
           <div key="turn" className="flex-1 flex flex-col">

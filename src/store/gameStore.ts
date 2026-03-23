@@ -47,33 +47,81 @@ export const useGameStore = create<GameState & GameActions>()((set, get) => ({
       position: 0,
     }));
 
-    const firstWord = shuffled[0];
-
     set({
-      gamePhase: GamePhase.TURN,
+      gamePhase: GamePhase.PRE_TURN,
       boardSize: config.boardSize,
       turnDuration: config.turnDuration,
       teams,
       currentTeamIndex: 0,
-      turn: {
-        currentWord: firstWord,
-        turnScore: 0,
-        wordsCorrect: 0,
-        wordsSkipped: 0,
-      },
+      turn: { ...INITIAL_TURN },
       shuffledWords: shuffled,
-      currentWordIndex: 1,
+      currentWordIndex: 0,
       bonusWord: null,
       savedConfig: config,
     });
   },
 
   // ────────────────────────────────────────────
-  // TURN → TURN (correct guess)
+  // PRE_TURN → TURN
+  // ────────────────────────────────────────────
+  startTurn: () => {
+    const state = get();
+    if (state.gamePhase !== GamePhase.PRE_TURN) return;
+
+    const { word, newShuffled, newIndex } = drawNextWord(
+      state.shuffledWords,
+      state.currentWordIndex,
+    );
+
+    set({
+      gamePhase: GamePhase.TURN,
+      turn: {
+        currentWord: word,
+        turnScore: 0,
+        wordsCorrect: 0,
+        wordsSkipped: 0,
+      },
+      shuffledWords: newShuffled,
+      currentWordIndex: newIndex,
+    });
+  },
+
+  // ────────────────────────────────────────────
+  // TURN → TURN or GAME_OVER (correct guess)
   // ────────────────────────────────────────────
   correctGuess: () => {
     const state = get();
     if (state.gamePhase !== GamePhase.TURN) return;
+
+    const newTurnScore = state.turn.turnScore + 1;
+    const newWordsCorrect = state.turn.wordsCorrect + 1;
+
+    // Check mid-turn win: would the team reach the end?
+    const currentTeam = state.teams[state.currentTeamIndex];
+    const projectedPosition = calculateNewPosition(
+      currentTeam.position,
+      newTurnScore,
+      state.boardSize,
+    );
+
+    if (checkWin(projectedPosition, state.boardSize)) {
+      // Apply score immediately and end the game
+      const updatedTeams = state.teams.map((team, i) =>
+        i === state.currentTeamIndex
+          ? { ...team, position: projectedPosition }
+          : team,
+      );
+      set({
+        gamePhase: GamePhase.GAME_OVER,
+        teams: updatedTeams,
+        turn: {
+          ...state.turn,
+          turnScore: newTurnScore,
+          wordsCorrect: newWordsCorrect,
+        },
+      });
+      return;
+    }
 
     const { word, newShuffled, newIndex } = drawNextWord(
       state.shuffledWords,
@@ -84,8 +132,8 @@ export const useGameStore = create<GameState & GameActions>()((set, get) => ({
       turn: {
         ...state.turn,
         currentWord: word,
-        turnScore: state.turn.turnScore + 1,
-        wordsCorrect: state.turn.wordsCorrect + 1,
+        turnScore: newTurnScore,
+        wordsCorrect: newWordsCorrect,
       },
       shuffledWords: newShuffled,
       currentWordIndex: newIndex,
@@ -205,27 +253,15 @@ export const useGameStore = create<GameState & GameActions>()((set, get) => ({
       return;
     }
 
-    // Rotate to next team and draw first word for their turn
+    // Rotate to next team — go to PRE_TURN so they see the board first
     const nextTeamIndex =
       (state.currentTeamIndex + 1) % state.teams.length;
 
-    const { word, newShuffled, newIndex } = drawNextWord(
-      state.shuffledWords,
-      state.currentWordIndex,
-    );
-
     set({
-      gamePhase: GamePhase.TURN,
+      gamePhase: GamePhase.PRE_TURN,
       teams: updatedTeams,
       currentTeamIndex: nextTeamIndex,
-      turn: {
-        currentWord: word,
-        turnScore: 0,
-        wordsCorrect: 0,
-        wordsSkipped: 0,
-      },
-      shuffledWords: newShuffled,
-      currentWordIndex: newIndex,
+      turn: { ...INITIAL_TURN },
       bonusWord: null,
     });
   },
@@ -247,5 +283,12 @@ export const useGameStore = create<GameState & GameActions>()((set, get) => ({
       return;
     }
     get().initGame(state.savedConfig);
+  },
+
+  // ────────────────────────────────────────────
+  // ANY → SETUP (exit to menu)
+  // ────────────────────────────────────────────
+  exitToMenu: () => {
+    set({ ...INITIAL_STATE });
   },
 }));

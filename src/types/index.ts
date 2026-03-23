@@ -2,6 +2,7 @@
 
 export enum GamePhase {
   SETUP = 'SETUP',
+  PRE_TURN = 'PRE_TURN',
   TURN = 'TURN',
   TIME_UP = 'TIME_UP',
   END_OF_TURN = 'END_OF_TURN',
@@ -73,6 +74,7 @@ export interface GameState {
 
 export interface GameActions {
   initGame: (config: GameConfig) => void;
+  startTurn: () => void;
   correctGuess: () => void;
   skipWord: () => void;
   endTimer: () => void;
@@ -81,4 +83,5 @@ export interface GameActions {
   commitTurn: () => void;
   newGame: () => void;
   restartGame: () => void;
+  exitToMenu: () => void;
 }
