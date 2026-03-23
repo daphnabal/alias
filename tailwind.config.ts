@@ -29,11 +29,16 @@ export default {
       },
       animation: {
         'pulse-urgent': 'pulseUrgent 0.6s ease-in-out infinite',
+        'confetti-fall': 'confettiFall 3s ease-in forwards',
       },
       keyframes: {
         pulseUrgent: {
           '0%, 100%': { boxShadow: '0 0 0 0 rgba(239, 68, 68, 0.5)' },
           '50%': { boxShadow: '0 0 20px 8px rgba(239, 68, 68, 0.3)' },
+        },
+        confettiFall: {
+          '0%': { transform: 'translateY(0) rotate(0deg)', opacity: '1' },
+          '100%': { transform: 'translateY(100vh) rotate(720deg)', opacity: '0' },
         },
       },
     },

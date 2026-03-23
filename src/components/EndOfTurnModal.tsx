@@ -1,4 +1,7 @@
+import { motion } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
+import { haptic } from '../utils/haptics';
+import { modalOverlay, modalContent, staggerContainer, staggerItem } from '../utils/motion';
 
 export default function EndOfTurnModal() {
   const teams = useGameStore((s) => s.teams);
@@ -8,9 +11,20 @@ export default function EndOfTurnModal() {
 
   const currentTeam = teams[currentTeamIndex];
 
+  const handleContinue = () => {
+    commitTurn();
+    haptic('light');
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="bg-slate-800 rounded-3xl p-6 max-w-sm w-full space-y-6 shadow-2xl border border-slate-700">
+    <motion.div
+      {...modalOverlay}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+    >
+      <motion.div
+        {...modalContent}
+        className="bg-slate-800 rounded-3xl p-6 max-w-sm w-full space-y-6 shadow-2xl border border-slate-700"
+      >
         {/* Title */}
         <div className="text-center space-y-1">
           <h2 className="text-2xl font-black text-slate-100">סיכום תור</h2>
@@ -49,12 +63,13 @@ export default function EndOfTurnModal() {
         </div>
 
         {/* Scoreboard */}
-        <div className="space-y-2">
+        <motion.div className="space-y-2" {...staggerContainer}>
           <h3 className="text-sm font-semibold text-slate-500 text-center">
             לוח תוצאות
           </h3>
           {teams.map((team, i) => (
-            <div
+            <motion.div
+              {...staggerItem}
               key={team.id}
               className={`flex items-center justify-between px-4 py-2 rounded-xl ${
                 i === currentTeamIndex
@@ -77,15 +92,19 @@ export default function EndOfTurnModal() {
               <span className="text-slate-400 font-semibold">
                 משבצת {team.position}
               </span>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Continue button */}
-        <button onClick={commitTurn} className="btn-primary w-full">
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={handleContinue}
+          className="btn-primary w-full"
+        >
           ▶ המשך
-        </button>
-      </div>
-    </div>
+        </motion.button>
+      </motion.div>
+    </motion.div>
   );
 }

@@ -1,6 +1,10 @@
 import { useCallback, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { useTimer } from '../hooks/useTimer';
+import { useAudio } from '../hooks/useAudio';
+import { haptic } from '../utils/haptics';
+import { wordCard, scorePop } from '../utils/motion';
 import TimerDisplay from './TimerDisplay';
 
 export default function TurnPanel() {
@@ -16,10 +20,13 @@ export default function TurnPanel() {
   const endTimer = useGameStore((s) => s.endTimer);
 
   const currentTeam = teams[currentTeamIndex];
+  const { play } = useAudio();
 
   const handleExpire = useCallback(() => {
     endTimer();
-  }, [endTimer]);
+    play('timeUp');
+    haptic('heavy');
+  }, [endTimer, play]);
 
   const { remaining, total, phase, progress, start } = useTimer({
     duration: turnDuration,
@@ -31,12 +38,35 @@ export default function TurnPanel() {
     start();
   }, [start]);
 
+  // Tick sound in urgent phase
+  useEffect(() => {
+    if (phase === 'urgent' && remaining > 0) {
+      play('tick');
+    }
+  }, [remaining, phase, play]);
+
+  const handleCorrect = () => {
+    correctGuess();
+    play('correct');
+    haptic('light');
+  };
+
+  const handleSkip = () => {
+    skipWord();
+    play('skip');
+    haptic('medium');
+  };
+
   return (
     <div className="flex-1 flex flex-col justify-between p-4 max-w-md mx-auto w-full">
       {/* ── Header: team name + timer ── */}
       <div className="space-y-3">
         {/* Team indicator */}
-        <div className="flex items-center justify-center gap-3">
+        <motion.div
+          className="flex items-center justify-center gap-3"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
           <div
             className="w-5 h-5 rounded-full"
             style={{ backgroundColor: currentTeam.color.hex }}
@@ -44,7 +74,7 @@ export default function TurnPanel() {
           <h2 className="text-2xl font-bold text-slate-100">
             {currentTeam.name}
           </h2>
-        </div>
+        </motion.div>
 
         {/* Timer */}
         <TimerDisplay
@@ -55,36 +85,50 @@ export default function TurnPanel() {
         />
       </div>
 
-      {/* ── Word card ── */}
+      {/* ── Word card (animated flip) ── */}
       <div className="flex-1 flex items-center justify-center py-6">
-        <div className="bg-slate-800 rounded-3xl p-8 w-full text-center shadow-2xl border border-slate-700">
-          <p className="text-4xl sm:text-5xl font-black text-white leading-tight">
-            {currentWord?.word ?? '...'}
-          </p>
-        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentWord?.word ?? 'empty'}
+            {...wordCard}
+            className="bg-slate-800 rounded-3xl p-8 w-full text-center shadow-2xl border border-slate-700"
+          >
+            <p className="text-4xl sm:text-5xl font-black text-white leading-tight">
+              {currentWord?.word ?? '...'}
+            </p>
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      {/* ── Score strip ── */}
-      <div className="flex justify-center gap-6 text-sm text-slate-400 mb-4">
-        <span>
-          ✅ {wordsCorrect}
-        </span>
+      {/* ── Score strip (animated) ── */}
+      <motion.div
+        {...scorePop}
+        key={turnScore}
+        className="flex justify-center gap-6 text-sm text-slate-400 mb-4"
+      >
+        <span>✅ {wordsCorrect}</span>
         <span className="font-bold text-lg text-slate-200">
           ניקוד: {turnScore >= 0 ? `+${turnScore}` : turnScore}
         </span>
-        <span>
-          ❌ {wordsSkipped}
-        </span>
-      </div>
+        <span>❌ {wordsSkipped}</span>
+      </motion.div>
 
       {/* ── Action buttons ── */}
       <div className="flex gap-3">
-        <button onClick={skipWord} className="btn-skip flex-1">
+        <motion.button
+          whileTap={{ scale: 0.92 }}
+          onClick={handleSkip}
+          className="btn-skip flex-1"
+        >
           ❌ דלג
-        </button>
-        <button onClick={correctGuess} className="btn-correct flex-1">
+        </motion.button>
+        <motion.button
+          whileTap={{ scale: 0.92 }}
+          onClick={handleCorrect}
+          className="btn-correct flex-1"
+        >
           ✅ נכון
-        </button>
+        </motion.button>
       </div>
     </div>
   );

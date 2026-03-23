@@ -1,3 +1,4 @@
+import { AnimatePresence } from 'framer-motion';
 import { useGameStore } from './store/gameStore';
 import { GamePhase } from './types';
 import SetupScreen from './components/SetupScreen';
@@ -14,32 +15,31 @@ function App() {
 
   return (
     <main className="min-h-screen flex flex-col bg-slate-900 text-slate-100 font-heebo">
-      {gamePhase === GamePhase.SETUP && <SetupScreen />}
+      <AnimatePresence mode="wait">
+        {gamePhase === GamePhase.SETUP && <SetupScreen key="setup" />}
 
-      {gamePhase === GamePhase.TURN && (
-        <div className="flex-1 flex flex-col">
-          {/* Board — collapsible on small screens */}
-          <div className="pt-3 pb-1">
-            <Board teams={teams} boardSize={boardSize} />
+        {gamePhase === GamePhase.TURN && (
+          <div key="turn" className="flex-1 flex flex-col">
+            <div className="pt-3 pb-1">
+              <Board teams={teams} boardSize={boardSize} />
+            </div>
+            <TurnPanel />
           </div>
+        )}
 
-          {/* Turn panel takes remaining space */}
-          <TurnPanel />
-        </div>
-      )}
-
-      {gamePhase === GamePhase.TIME_UP && (
-        <div className="flex-1 flex flex-col">
-          <div className="pt-3 pb-1">
-            <Board teams={teams} boardSize={boardSize} />
+        {gamePhase === GamePhase.TIME_UP && (
+          <div key="timeup" className="flex-1 flex flex-col">
+            <div className="pt-3 pb-1">
+              <Board teams={teams} boardSize={boardSize} />
+            </div>
+            <TimeUpModal />
           </div>
-          <TimeUpModal />
-        </div>
-      )}
+        )}
 
-      {gamePhase === GamePhase.END_OF_TURN && <EndOfTurnModal />}
+        {gamePhase === GamePhase.END_OF_TURN && <EndOfTurnModal key="eot" />}
 
-      {gamePhase === GamePhase.GAME_OVER && <GameOverModal />}
+        {gamePhase === GamePhase.GAME_OVER && <GameOverModal key="gameover" />}
+      </AnimatePresence>
     </main>
   );
 }

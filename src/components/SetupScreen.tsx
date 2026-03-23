@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { GAME_DEFAULTS, TEAM_COLORS } from '../constants';
 import { useGameStore } from '../store/gameStore';
 
@@ -28,7 +29,12 @@ export default function SetupScreen() {
   const canStart = teamCount >= GAME_DEFAULTS.minTeams;
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-4 gap-8 max-w-md mx-auto w-full">
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="flex-1 flex flex-col items-center justify-center p-4 gap-8 max-w-md mx-auto w-full"
+    >
       {/* ── Logo ── */}
       <div className="text-center space-y-2">
         <h1 className="text-5xl font-black tracking-tight">🎯 אליאס</h1>
@@ -135,13 +141,14 @@ export default function SetupScreen() {
       </section>
 
       {/* ── Start button ── */}
-      <button
+      <motion.button
+        whileTap={{ scale: 0.95 }}
         onClick={handleStart}
         disabled={!canStart}
         className="btn-primary w-full text-2xl disabled:opacity-40 disabled:pointer-events-none"
       >
         🚀 התחל משחק
-      </button>
-    </div>
+      </motion.button>
+    </motion.div>
   );
 }

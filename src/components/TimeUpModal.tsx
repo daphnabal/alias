@@ -1,4 +1,7 @@
+import { motion } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
+import { haptic } from '../utils/haptics';
+import { modalOverlay, modalContent } from '../utils/motion';
 
 export default function TimeUpModal() {
   const bonusWord = useGameStore((s) => s.bonusWord);
@@ -11,9 +14,20 @@ export default function TimeUpModal() {
   // Other teams that can guess the bonus word
   const otherTeams = teams.filter((_, i) => i !== currentTeamIndex);
 
+  const handleAward = (teamId: string) => {
+    awardBonusPoint(teamId);
+    haptic('light');
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="bg-slate-800 rounded-3xl p-6 max-w-sm w-full space-y-6 shadow-2xl border border-slate-700">
+    <motion.div
+      {...modalOverlay}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+    >
+      <motion.div
+        {...modalContent}
+        className="bg-slate-800 rounded-3xl p-6 max-w-sm w-full space-y-6 shadow-2xl border border-slate-700"
+      >
         {/* Title */}
         <div className="text-center space-y-2">
           <h2 className="text-3xl font-black text-yellow-400">⏰ נגמר הזמן!</h2>
@@ -29,7 +43,7 @@ export default function TimeUpModal() {
 
         {/* Award to current team */}
         <button
-          onClick={() => awardBonusPoint(currentTeam.id)}
+          onClick={() => handleAward(currentTeam.id)}
           className="w-full py-3 rounded-xl font-bold text-lg transition-colors"
           style={{
             backgroundColor: currentTeam.color.hex,
@@ -43,7 +57,7 @@ export default function TimeUpModal() {
         {otherTeams.map((team) => (
           <button
             key={team.id}
-            onClick={() => awardBonusPoint(team.id)}
+            onClick={() => handleAward(team.id)}
             className="w-full py-3 rounded-xl font-bold text-lg transition-colors
                        border-2 hover:opacity-80"
             style={{
@@ -62,7 +76,7 @@ export default function TimeUpModal() {
         >
           ❌ אף אחד לא ניחש
         </button>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

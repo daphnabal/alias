@@ -1,19 +1,39 @@
+import { useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { checkWin } from '../utils/scoring';
+import { useAudio } from '../hooks/useAudio';
+import { haptic } from '../utils/haptics';
+import { modalOverlay, modalContent, staggerContainer, staggerItem } from '../utils/motion';
+import Confetti from './Confetti';
 
 export default function GameOverModal() {
   const teams = useGameStore((s) => s.teams);
   const boardSize = useGameStore((s) => s.boardSize);
   const newGame = useGameStore((s) => s.newGame);
   const restartGame = useGameStore((s) => s.restartGame);
+  const { play } = useAudio();
 
   // Find the winners (could be multiple if tie)
   const winners = teams.filter((t) => checkWin(t.position, boardSize));
   const sortedTeams = [...teams].sort((a, b) => b.position - a.position);
 
+  useEffect(() => {
+    play('win');
+    haptic('heavy');
+  }, [play]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-      <div className="bg-slate-800 rounded-3xl p-6 max-w-sm w-full space-y-6 shadow-2xl border border-slate-700">
+    <>
+      <Confetti count={80} duration={5000} />
+      <motion.div
+        {...modalOverlay}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+      >
+        <motion.div
+          {...modalContent}
+          className="bg-slate-800 rounded-3xl p-6 max-w-sm w-full space-y-6 shadow-2xl border border-slate-700"
+        >
         {/* Winner announcement */}
         <div className="text-center space-y-3">
           <h2 className="text-4xl font-black">🏆</h2>
@@ -35,12 +55,13 @@ export default function GameOverModal() {
         </div>
 
         {/* Final standings */}
-        <div className="space-y-2">
+        <motion.div className="space-y-2" {...staggerContainer}>
           <h4 className="text-sm font-semibold text-slate-500 text-center">
             דירוג סופי
           </h4>
           {sortedTeams.map((team, rank) => (
-            <div
+            <motion.div
+              {...staggerItem}
               key={team.id}
               className="flex items-center justify-between px-4 py-3 rounded-xl bg-slate-900"
             >
@@ -59,20 +80,21 @@ export default function GameOverModal() {
               <span className="text-slate-400 font-bold">
                 {team.position}/{boardSize}
               </span>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Action buttons */}
         <div className="space-y-3">
-          <button onClick={restartGame} className="btn-primary w-full">
+          <motion.button whileTap={{ scale: 0.95 }} onClick={restartGame} className="btn-primary w-full">
             🔄 שחק שוב
-          </button>
-          <button onClick={newGame} className="btn-secondary w-full">
+          </motion.button>
+          <motion.button whileTap={{ scale: 0.95 }} onClick={newGame} className="btn-secondary w-full">
             ⚙️ הגדרות חדשות
-          </button>
+          </motion.button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+    </>
   );
 }
