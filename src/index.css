@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    overflow: hidden;
+    height: 100%;
+  }
+
+  body {
+    height: 100%;
+    overflow: auto;
+    overscroll-behavior: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  #root {
+    height: 100%;
+  }
+}
+
+@layer components {
+  .btn-action {
+    @apply flex items-center justify-center
+           min-h-[64px] w-full rounded-2xl
+           text-xl font-bold
+           active:scale-95 transition-transform duration-100
+           focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-offset-slate-900;
+  }
+
+  .btn-correct {
+    @apply btn-action bg-green-500 text-white focus:ring-green-400;
+  }
+
+  .btn-skip {
+    @apply btn-action bg-red-500 text-white focus:ring-red-400;
+  }
+
+  .btn-primary {
+    @apply btn-action bg-blue-500 text-white focus:ring-blue-400;
+  }
+
+  .btn-secondary {
+    @apply flex items-center justify-center
+           min-h-[48px] px-6 rounded-xl
+           text-lg font-medium
+           bg-slate-700 text-slate-200
+           active:scale-95 transition-transform duration-100
+           focus:outline-none focus:ring-2 focus:ring-slate-400;
+  }
+}
