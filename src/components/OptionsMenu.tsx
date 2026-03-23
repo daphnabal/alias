@@ -23,9 +23,7 @@ export default function OptionsMenu({ onPause, onResume }: OptionsMenuProps) {
   };
 
   const handleExit = () => {
-    setIsOpen(false);
-    // Small delay so the overlay animates out before the phase changes
-    setTimeout(() => exitToMenu(), 50);
+    exitToMenu();
   };
 
   return (

@@ -1,4 +1,3 @@
-import { AnimatePresence } from 'framer-motion';
 import { useGameStore } from './store/gameStore';
 import { GamePhase } from './types';
 import SetupScreen from './components/SetupScreen';
@@ -16,33 +15,31 @@ function App() {
 
   return (
     <main className="min-h-screen flex flex-col bg-slate-900 text-slate-100 font-heebo">
-      <AnimatePresence>
-        {gamePhase === GamePhase.SETUP && <SetupScreen key="setup" />}
+      {gamePhase === GamePhase.SETUP && <SetupScreen />}
 
-        {gamePhase === GamePhase.PRE_TURN && <PreTurnScreen key="preturn" />}
+      {gamePhase === GamePhase.PRE_TURN && <PreTurnScreen />}
 
-        {gamePhase === GamePhase.TURN && (
-          <div key="turn" className="flex-1 flex flex-col">
-            <div className="pt-3 pb-1">
-              <Board teams={teams} boardSize={boardSize} />
-            </div>
-            <TurnPanel />
+      {gamePhase === GamePhase.TURN && (
+        <div className="flex-1 flex flex-col">
+          <div className="pt-3 pb-1">
+            <Board teams={teams} boardSize={boardSize} />
           </div>
-        )}
+          <TurnPanel />
+        </div>
+      )}
 
-        {gamePhase === GamePhase.TIME_UP && (
-          <div key="timeup" className="flex-1 flex flex-col">
-            <div className="pt-3 pb-1">
-              <Board teams={teams} boardSize={boardSize} />
-            </div>
-            <TimeUpModal />
+      {gamePhase === GamePhase.TIME_UP && (
+        <div className="flex-1 flex flex-col">
+          <div className="pt-3 pb-1">
+            <Board teams={teams} boardSize={boardSize} />
           </div>
-        )}
+          <TimeUpModal />
+        </div>
+      )}
 
-        {gamePhase === GamePhase.END_OF_TURN && <EndOfTurnModal key="eot" />}
+      {gamePhase === GamePhase.END_OF_TURN && <EndOfTurnModal />}
 
-        {gamePhase === GamePhase.GAME_OVER && <GameOverModal key="gameover" />}
-      </AnimatePresence>
+      {gamePhase === GamePhase.GAME_OVER && <GameOverModal />}
     </main>
   );
 }
