@@ -26,10 +26,12 @@ export default function GameOverModal() {
     play('win');
     haptic('heavy');
     
-    // Send flagged words email if any exist
+    // Send flagged words email if any exist (only once)
+    let didSend = false;
     const sendFlagsEmail = async () => {
       const flags = getFlaggedWords();
-      if (flags.length > 0 && !emailSent) {
+      if (flags.length > 0 && !emailSent && !didSend) {
+        didSend = true;
         const success = await sendFlaggedWordsEmail(flags);
         if (success) {
           clearFlaggedWords();
@@ -39,7 +41,7 @@ export default function GameOverModal() {
     };
     
     sendFlagsEmail();
-  }, [play, emailSent]);
+  }, [play]);
 
   return (
     <>
