@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { checkWin } from '../utils/scoring';
 import { useAudio } from '../hooks/useAudio';
 import { haptic } from '../utils/haptics';
 import { modalOverlay, modalContent, staggerContainer, staggerItem } from '../utils/motion';
+import { getFlaggedWords, clearFlaggedWords } from '../utils/wordFlags';
+import { sendFlaggedWordsEmail } from '../utils/emailService';
 import Confetti from './Confetti';
 
 export default function GameOverModal() {
@@ -13,6 +15,8 @@ export default function GameOverModal() {
   const newGame = useGameStore((s) => s.newGame);
   const restartGame = useGameStore((s) => s.restartGame);
   const { play } = useAudio();
+  
+  const [emailSent, setEmailSent] = useState(false);
 
   // Find the winners (could be multiple if tie)
   const winners = teams.filter((t) => checkWin(t.position, boardSize));
@@ -21,7 +25,21 @@ export default function GameOverModal() {
   useEffect(() => {
     play('win');
     haptic('heavy');
-  }, [play]);
+    
+    // Send flagged words email if any exist
+    const sendFlagsEmail = async () => {
+      const flags = getFlaggedWords();
+      if (flags.length > 0 && !emailSent) {
+        const success = await sendFlaggedWordsEmail(flags);
+        if (success) {
+          clearFlaggedWords();
+          setEmailSent(true);
+        }
+      }
+    };
+    
+    sendFlagsEmail();
+  }, [play, emailSent]);
 
   return (
     <>

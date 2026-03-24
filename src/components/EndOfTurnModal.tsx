@@ -1,9 +1,12 @@
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../utils/haptics';
 import { modalOverlay, modalContent, staggerContainer, staggerItem } from '../utils/motion';
+import { flagWord, isWordFlagged } from '../utils/wordFlags';
 
 export default function EndOfTurnModal() {
+  const [flaggedWords, setFlaggedWords] = useState<Set<string>>(new Set());
   const teams = useGameStore((s) => s.teams);
   const currentTeamIndex = useGameStore((s) => s.currentTeamIndex);
   const turn = useGameStore((s) => s.turn);
@@ -14,6 +17,16 @@ export default function EndOfTurnModal() {
   const handleContinue = () => {
     commitTurn();
     haptic('light');
+  };
+
+  const handleFlagWord = (word: string) => {
+    flagWord(word);
+    setFlaggedWords(prev => new Set([...prev, word]));
+    haptic('medium');
+  };
+
+  const isWordCurrentlyFlagged = (word: string): boolean => {
+    return flaggedWords.has(word) || isWordFlagged(word);
   };
 
   return (
@@ -73,9 +86,21 @@ export default function EndOfTurnModal() {
                 {turn.wordHistory.map((item, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between px-2 py-1 text-sm"
+                    className="flex items-center justify-between px-2 py-1 text-sm gap-2"
                   >
-                    <span className="text-slate-300">{item.word}</span>
+                    <button
+                      onClick={() => handleFlagWord(item.word)}
+                      disabled={isWordCurrentlyFlagged(item.word)}
+                      className={`text-lg leading-none transition-opacity ${
+                        isWordCurrentlyFlagged(item.word) 
+                          ? 'opacity-30 cursor-not-allowed' 
+                          : 'hover:scale-110 active:scale-95'
+                      }`}
+                      title="הצע למחוק מילה"
+                    >
+                      🗑️
+                    </button>
+                    <span className="text-slate-300 flex-1 text-right">{item.word}</span>
                     <span className={item.wasCorrect ? 'text-green-400' : 'text-red-400'}>
                       {item.wasCorrect ? '✓' : '✗'}
                     </span>
