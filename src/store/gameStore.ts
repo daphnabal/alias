@@ -4,7 +4,7 @@ import { GamePhase } from '../types';
 import { TEAM_COLORS } from '../constants';
 import { validateDataset, fisherYatesShuffle, drawNextWord } from '../utils/wordSelection';
 import { calculateNewPosition, checkWin } from '../utils/scoring';
-import { generatePowerUpTiles, getPowerUpAtPosition } from '../utils/powerUps';
+import { generatePowerUpTiles, getPowerUpAtPosition, ALL_POWER_UPS } from '../utils/powerUps';
 import wordData from '../data/words.json';
 
 // ── Initial values ──
@@ -31,6 +31,7 @@ const INITIAL_STATE: GameState = {
   bonusWord: null,
   savedConfig: null,
   enablePowerUps: true,
+  enabledPowerUpTypes: [...ALL_POWER_UPS],
   powerUpTiles: [],
   bothTeamsWordsRemaining: 0,
   bothTeamsScores: {},
@@ -59,7 +60,7 @@ export const useGameStore = create<GameState & GameActions>()((set, get) => ({
       };
     });
 
-    const powerUpTiles = config.enablePowerUps ? generatePowerUpTiles(config.boardSize) : [];
+    const powerUpTiles = config.enablePowerUps ? generatePowerUpTiles(config.boardSize, config.enabledPowerUpTypes) : [];
 
     set({
       gamePhase: GamePhase.PRE_TURN,
@@ -73,6 +74,7 @@ export const useGameStore = create<GameState & GameActions>()((set, get) => ({
       bonusWord: null,
       savedConfig: config,
       enablePowerUps: config.enablePowerUps,
+      enabledPowerUpTypes: config.enabledPowerUpTypes,
       powerUpTiles,
       bothTeamsWordsRemaining: 0,
       bothTeamsScores: {},

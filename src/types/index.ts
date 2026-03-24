@@ -17,7 +17,7 @@ export enum GamePhase {
 // ── Power-Up Tiles ──
 
 export type PowerUpType =
-  | 'both_teams'      // Both teams compete, no timer, 5 words
+  | 'both_teams'      // Both teams compete, 7 words, 30s per word
   | 'bonus_or_minus'  // 8+ words = +3, below = -3
   | 'speed_demon'     // Half time, double points
   | 'gift_or_curse'   // Give +3 or -3 to any team
@@ -29,7 +29,7 @@ export interface PowerUpTile {
 }
 
 export const POWER_UP_INFO: Record<PowerUpType, { emoji: string; name: string; description: string }> = {
-  both_teams:     { emoji: '⚔️',  name: 'קרב קבוצות',     description: '5 מילים ללא מגבלת זמן — שתי הקבוצות מנחשות!' },
+  both_teams:     { emoji: '⚔️',  name: 'קרב קבוצות',     description: '7 מילים, 30 שניות לכל מילה — שתי הקבוצות מנחשות!' },
   bonus_or_minus: { emoji: '🎲',  name: 'בונוס או מינוס',  description: 'ענו על 8+ מילים = +3 צעדים. פחות? -3 צעדים!' },
   speed_demon:    { emoji: '⚡',   name: 'מהירות שטנית',    description: 'חצי זמן, אבל כל מילה שווה כפול!' },
   gift_or_curse:  { emoji: '🎁',  name: 'מתנה או קללה',   description: 'בסוף התור — בחרו קבוצה לתת לה +3 או -3 צעדים!' },
@@ -91,6 +91,7 @@ export interface GameConfig {
   boardSize: number;
   turnDuration: number;
   enablePowerUps: boolean;
+  enabledPowerUpTypes: PowerUpType[];
 }
 
 // ── Store ──
@@ -107,6 +108,7 @@ export interface GameState {
   bonusWord: Word | null;
   savedConfig: GameConfig | null;
   enablePowerUps: boolean;
+  enabledPowerUpTypes: PowerUpType[];
   powerUpTiles: PowerUpTile[];
   bothTeamsWordsRemaining: number;
   bothTeamsScores: Record<string, number>;

@@ -1,8 +1,12 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { GAME_DEFAULTS, TEAM_COLORS } from '../constants';
 import { useGameStore } from '../store/gameStore';
 import OptionsMenu from './OptionsMenu';
+import { POWER_UP_INFO, type PowerUpType } from '../types';
+import { ALL_POWER_UPS } from '../utils/powerUps';
+
+const ALL_TYPES: PowerUpType[] = ALL_POWER_UPS;
 
 export default function SetupScreen() {
   const initGame = useGameStore((s) => s.initGame);
@@ -14,6 +18,14 @@ export default function SetupScreen() {
   const [boardSize, setBoardSize] = useState<number>(GAME_DEFAULTS.boardSize);
   const [turnDuration, setTurnDuration] = useState<number>(GAME_DEFAULTS.turnDuration);
   const [enablePowerUps, setEnablePowerUps] = useState<boolean>(true);
+  const [enabledPowerUpTypes, setEnabledPowerUpTypes] = useState<PowerUpType[]>([...ALL_TYPES]);
+  const [showModes, setShowModes] = useState(false);
+
+  const toggleType = (type: PowerUpType) => {
+    setEnabledPowerUpTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
+    );
+  };
 
   const handleNameChange = (index: number, value: string) => {
     setTeamNames((prev) => {
@@ -25,7 +37,8 @@ export default function SetupScreen() {
 
   const handleStart = () => {
     const names = teamNames.slice(0, teamCount);
-    initGame({ teamNames: names, boardSize, turnDuration, enablePowerUps });
+    const activeTypes = enablePowerUps ? enabledPowerUpTypes : [];
+    initGame({ teamNames: names, boardSize, turnDuration, enablePowerUps, enabledPowerUpTypes: activeTypes });
   };
 
   const canStart = teamCount >= GAME_DEFAULTS.minTeams;
@@ -143,29 +156,94 @@ export default function SetupScreen() {
       </section>
 
       {/* ── Special tiles ── */}
-      <section className="w-full">
-        <label className="flex items-center gap-3 cursor-pointer select-none">
-          <div
-            onClick={() => setEnablePowerUps((v) => !v)}
-            className={`relative w-12 h-6 rounded-full transition-colors ${
-              enablePowerUps ? 'bg-purple-600' : 'bg-slate-600'
-            }`}
-          >
-            <span
-              className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                enablePowerUps ? 'translate-x-7' : 'translate-x-1'
-              }`}
-            />
+      <section className="w-full space-y-2">
+        {/* Main toggle row */}
+        <div className="flex items-center justify-between bg-slate-800 rounded-2xl px-4 py-3 border border-slate-700">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">⭐</span>
+            <div>
+              <p className="text-slate-100 font-semibold text-base leading-tight">משבצות מיוחדות</p>
+              <p className="text-slate-500 text-xs">הפתעות רנדומליות לאורך הלוח</p>
+            </div>
           </div>
-          <span className="text-slate-200 font-semibold text-base">
-            ⭐ משבצות מיוחדות
-          </span>
-        </label>
-        <p className="mt-1 text-sm text-slate-500 pr-1">
-          {enablePowerUps
-            ? 'כל 8–12 משבצות מופיעה משבצת הפתעה עם אפקט מיוחד'
-            : 'משחק רגיל ללא משבצות מיוחדות'}
-        </p>
+          <div className="flex items-center gap-2">
+            {/* Expand modes button */}
+            {enablePowerUps && (
+              <button
+                onClick={() => setShowModes((v) => !v)}
+                className="text-xs text-purple-400 hover:text-purple-300 font-medium px-2 py-1 rounded-lg hover:bg-slate-700 transition-colors"
+              >
+                {showModes ? '▲ פחות' : '▼ הגדרות'}
+              </button>
+            )}
+            {/* Master toggle */}
+            <button
+              role="switch"
+              aria-checked={enablePowerUps}
+              onClick={() => { setEnablePowerUps((v) => !v); setShowModes(false); }}
+              className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
+                enablePowerUps ? 'bg-purple-600' : 'bg-slate-600'
+              }`}
+            >
+              <span
+                className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                  enablePowerUps ? 'translate-x-6' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+
+        {/* Per-mode toggles */}
+        <AnimatePresence>
+          {enablePowerUps && showModes && (
+            <motion.div
+              key="modes"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="bg-slate-800/60 rounded-2xl border border-slate-700 divide-y divide-slate-700/50">
+                {ALL_TYPES.map((type) => {
+                  const info = POWER_UP_INFO[type];
+                  const isOn = enabledPowerUpTypes.includes(type);
+                  return (
+                    <div key={type} className="flex items-center justify-between px-4 py-3 gap-3">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <span className="text-xl flex-shrink-0 mt-0.5">{info.emoji}</span>
+                        <div className="min-w-0">
+                          <p className="text-slate-200 font-medium text-sm leading-tight">{info.name}</p>
+                          <p className="text-slate-500 text-xs mt-0.5 leading-snug">{info.description}</p>
+                        </div>
+                      </div>
+                      <button
+                        role="switch"
+                        aria-checked={isOn}
+                        onClick={() => toggleType(type)}
+                        className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${
+                          isOn ? 'bg-purple-600' : 'bg-slate-600'
+                        }`}
+                      >
+                        <span
+                          className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                            isOn ? 'translate-x-5' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+              {enabledPowerUpTypes.length === 0 && (
+                <p className="text-center text-xs text-amber-400 pt-1">
+                  ⚠️ בחר לפחות מצב אחד
+                </p>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
 
       {/* ── Start button ── */}

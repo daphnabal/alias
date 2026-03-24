@@ -7,7 +7,7 @@ import { useTimer } from '../hooks/useTimer';
 import { wordCard } from '../utils/motion';
 import TimerDisplay from './TimerDisplay';
 
-const BOTH_TEAMS_WORD_DURATION = 20; // seconds per word
+const BOTH_TEAMS_WORD_DURATION = 30; // seconds per word
 
 export default function BothTeamsPanel() {
   const currentWord = useGameStore((s) => s.turn.currentWord);
@@ -24,16 +24,15 @@ export default function BothTeamsPanel() {
     haptic('medium');
   }, [bothTeamsSkip, play]);
 
-  // 20-second timer per word — auto-skip on expiry
-  const { remaining, total, phase, progress, start, reset } = useTimer({
+  // 30-second timer per word — auto-skip on expiry
+  const { remaining, total, phase, progress, reset } = useTimer({
     duration: BOTH_TEAMS_WORD_DURATION,
     onExpire: handleSkip,
   });
 
   // Start timer fresh on each new word
   useEffect(() => {
-    reset();
-    start();
+    reset(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentWord?.word]);
 

@@ -1,7 +1,7 @@
 import type { PowerUpTile, PowerUpType } from '../types';
 
-/** All available power-up types. */
-const ALL_POWER_UPS: PowerUpType[] = [
+/** All available power-up types (used as default). */
+export const ALL_POWER_UPS: PowerUpType[] = [
   'both_teams',
   'bonus_or_minus',
   'speed_demon',
@@ -12,10 +12,12 @@ const ALL_POWER_UPS: PowerUpType[] = [
 /**
  * Generate special power-up tiles for the board.
  * Every 8-12 tiles there is a special tile, placed randomly within each window.
- * The power-up type is chosen randomly from ALL_POWER_UPS.
+ * The power-up type is chosen randomly from the provided list of enabled types.
  * Special tiles never occupy position 0 (start) or the last tile (finish).
  */
-export function generatePowerUpTiles(boardSize: number): PowerUpTile[] {
+export function generatePowerUpTiles(boardSize: number, enabledTypes: PowerUpType[] = ALL_POWER_UPS): PowerUpTile[] {
+  if (enabledTypes.length === 0) return [];
+
   const tiles: PowerUpTile[] = [];
   const minGap = 8;
   const maxGap = 12;
@@ -30,8 +32,8 @@ export function generatePowerUpTiles(boardSize: number): PowerUpTile[] {
     // Don't place on the finish tile or beyond
     if (cursor >= boardSize - 1) break;
 
-    // Pick a random power-up type
-    const type = ALL_POWER_UPS[Math.floor(Math.random() * ALL_POWER_UPS.length)];
+    // Pick a random power-up type from the enabled list
+    const type = enabledTypes[Math.floor(Math.random() * enabledTypes.length)];
 
     tiles.push({ position: cursor, type });
   }

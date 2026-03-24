@@ -26,8 +26,8 @@ interface UseTimerReturn {
   start: () => void;
   /** Pause without resetting. */
   pause: () => void;
-  /** Reset to full duration and stop. */
-  reset: () => void;
+  /** Reset to full duration and stop. Pass true to also start immediately. */
+  reset: (autoStart?: boolean) => void;
 }
 
 function getTimerPhase(remaining: number, total: number): TimerPhase {
@@ -82,17 +82,17 @@ export function useTimer({
   // ── Controls ──
 
   const start = useCallback(() => {
-    if (remaining > 0) setIsRunning(true);
-  }, [remaining]);
+    setIsRunning(true);
+  }, []);
 
   const pause = useCallback(() => {
     setIsRunning(false);
   }, []);
 
-  const reset = useCallback(() => {
-    setIsRunning(false);
-    setRemaining(duration);
+  const reset = useCallback((autoStart = false) => {
     hasFiredRef.current = false;
+    setRemaining(duration);
+    setIsRunning(autoStart);
   }, [duration]);
 
   // ── Derived values ──

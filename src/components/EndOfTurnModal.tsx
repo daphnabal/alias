@@ -5,6 +5,7 @@ import { POWER_UP_INFO } from '../types';
 import { haptic } from '../utils/haptics';
 import { modalOverlay, modalContent, staggerContainer, staggerItem } from '../utils/motion';
 import { flagWord, isWordFlagged } from '../utils/wordFlags';
+import { calculateNewPosition } from '../utils/scoring';
 import OptionsMenu from './OptionsMenu';
 
 export default function EndOfTurnModal() {
@@ -12,9 +13,16 @@ export default function EndOfTurnModal() {
   const teams = useGameStore((s) => s.teams);
   const currentTeamIndex = useGameStore((s) => s.currentTeamIndex);
   const turn = useGameStore((s) => s.turn);
+  const boardSize = useGameStore((s) => s.boardSize);
   const commitTurn = useGameStore((s) => s.commitTurn);
 
   const currentTeam = teams[currentTeamIndex];
+
+  // Show the projected position (after applying turn score) so it matches what tiles show
+  const projectedPosition = (team: typeof teams[0], i: number) =>
+    i === currentTeamIndex
+      ? calculateNewPosition(team.position, turn.turnScore, boardSize)
+      : team.position;
 
   const handleContinue = () => {
     commitTurn();
@@ -160,7 +168,7 @@ export default function EndOfTurnModal() {
                 <span className="text-slate-200 font-medium">{team.name}</span>
               </div>
               <span className="text-slate-400 font-semibold">
-                משבצת {team.position}
+                משבצת {projectedPosition(team, i)}
               </span>
             </motion.div>
           ))}

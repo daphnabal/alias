@@ -12,6 +12,7 @@ const twoTeamConfig: GameConfig = {
   boardSize: 30,
   turnDuration: 60,
   enablePowerUps: false,
+  enabledPowerUpTypes: [],
 };
 
 const threeTeamConfig: GameConfig = {
@@ -19,6 +20,7 @@ const threeTeamConfig: GameConfig = {
   boardSize: 30,
   turnDuration: 60,
   enablePowerUps: false,
+  enabledPowerUpTypes: [],
 };
 
 // Reset store before each test
@@ -44,7 +46,7 @@ describe('Game initialization', () => {
   });
 
   it('generates power-up tiles', () => {
-    getState().initGame({ ...twoTeamConfig, enablePowerUps: true });
+    getState().initGame({ ...twoTeamConfig, enablePowerUps: true, enabledPowerUpTypes: ['speed_demon', 'bonus_or_minus'] });
     const s = getState();
     expect(s.powerUpTiles.length).toBeGreaterThan(0);
     // All tiles should be in valid range
