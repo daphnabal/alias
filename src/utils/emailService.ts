@@ -7,7 +7,7 @@ import emailjs from '@emailjs/browser';
 import { FlaggedWord } from './wordFlags';
 
 // EmailJS Configuration
-const SERVICE_ID = 'service_alias'; // You still need to get your Service ID from EmailJS dashboard
+const SERVICE_ID = 'daphnalias';
 const TEMPLATE_ID = 'template_n9fhcu8';
 const PUBLIC_KEY = 'NWVCWh51znas3iHa0';
 
